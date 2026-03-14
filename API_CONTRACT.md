@@ -129,6 +129,49 @@ Content-Type: application/json
 | `Presidente` | Formato F/G — empresas con Presidente |
 | `Gerente` | Formato H — solo Gerente |
 
+### Encontrado sin representante legal (CO)
+
+Cuando la empresa se encuentra en RUES pero no se pudo extraer el representante legal.
+El campo `legal_representative_raw` contiene el texto crudo para analisis externo (ej. por un LLM).
+
+```json
+{
+  "tax_id_input": "890903938",
+  "country": "CO",
+  "found": true,
+  "registration": {
+    "legal_name": "BANCOLOMBIA S.A.",
+    "tax_id": "NIT 890903938 - 8",
+    "status": "ACTIVA",
+    "category": "Sociedad o persona juridica principal o esal",
+    "society_type": "Sociedad comercial",
+    "organization_type": "Sociedades por acciones simplificadas sas",
+    "chamber_of_commerce": "Medellin para antioquia",
+    "matricula_number": "1234567",
+    "matricula_date": "1945/01/01",
+    "validity_date": "Indefinido",
+    "renewal_date": "2025/03/28",
+    "last_renewal_year": "2025",
+    "update_date": "2026/01/15",
+    "social_enterprise": "N",
+    "commercial_name": null,
+    "taxpayer_type": null,
+    "taxpayer_condition": null,
+    "inscription_date": null,
+    "activity_start_date": null,
+    "fiscal_address": null,
+    "economic_activities": null,
+    "foreign_trade_activity": null
+  },
+  "legal_representative": null,
+  "legal_representative_raw": "CERTIFICA\n\nLa Representacion Legal de la compania...\nCARGO NOMBRE IDENTIFICACION\nPRESIDENTE ...",
+  "raw_entries": null,
+  "errors": ["No se pudo extraer informacion del Gerente"]
+}
+```
+
+> **Nota:** Cuando `legal_representative` es `null` pero `found` es `true`, el campo `legal_representative_raw` contiene el texto original de RUES. Este texto puede ser procesado externamente (por ejemplo, por un LLM) para extraer la informacion que el regex no pudo parsear.
+
 ### No encontrado (CO)
 
 ```json
