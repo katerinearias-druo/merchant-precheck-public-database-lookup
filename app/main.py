@@ -22,6 +22,8 @@ from app.models.schemas import LookupRequest, LookupResponse
 from app.services.browser import get_browser, shutdown_browser
 from app.services.co_rues_service import CoRuesService
 from app.services.nit_validator import validate_nit
+from app.services.pe_sunat_service import PeSunatService
+from app.services.ruc_validator import validate_ruc
 
 # ---------------------------------------------------------------------------
 # Version — single source of truth: VERSION file at project root
@@ -90,6 +92,7 @@ async def lifespan(_app: FastAPI):
 # ---------------------------------------------------------------------------
 _services = {
     Country.CO: CoRuesService(),
+    Country.PE: PeSunatService(),
 }
 
 # ---------------------------------------------------------------------------
@@ -128,6 +131,14 @@ async def lookup(request: Request, body: LookupRequest = Body(...)):
             raise HTTPException(
                 status_code=422,
                 detail=f"NIT invalido: {'; '.join(validation_errors)}",
+            )
+        tax_id = cleaned
+    elif body.country == Country.PE:
+        cleaned, validation_errors = validate_ruc(body.tax_id)
+        if validation_errors:
+            raise HTTPException(
+                status_code=422,
+                detail=f"RUC invalido: {'; '.join(validation_errors)}",
             )
         tax_id = cleaned
     else:

@@ -21,6 +21,10 @@ async def get_browser() -> Browser:
         _playwright_instance = await async_playwright().start()
         _browser = await _playwright_instance.chromium.launch(
             headless=settings.browser_headless,
+            args=[
+                "--disable-blink-features=AutomationControlled",
+                "--no-sandbox",
+            ],
         )
         logger.info("Playwright browser launched (headless=%s)", settings.browser_headless)
     return _browser

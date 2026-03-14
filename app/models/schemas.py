@@ -16,6 +16,7 @@ class BusinessRegistration(BaseModel):
     legal_name: Optional[str] = None
     tax_id: Optional[str] = None
     status: Optional[RegistrationStatus] = None
+    # Colombia (RUES)
     category: Optional[str] = None
     society_type: Optional[str] = None
     organization_type: Optional[str] = None
@@ -27,6 +28,15 @@ class BusinessRegistration(BaseModel):
     last_renewal_year: Optional[str] = None
     update_date: Optional[str] = None
     social_enterprise: Optional[str] = None
+    # Peru (SUNAT)
+    commercial_name: Optional[str] = None
+    taxpayer_type: Optional[str] = None
+    taxpayer_condition: Optional[str] = None
+    inscription_date: Optional[str] = None
+    activity_start_date: Optional[str] = None
+    fiscal_address: Optional[str] = None
+    economic_activities: Optional[list[str]] = None
+    foreign_trade_activity: Optional[str] = None
 
 
 class LegalRepresentative(BaseModel):
@@ -34,6 +44,7 @@ class LegalRepresentative(BaseModel):
     name: Optional[str] = None
     id_type: Optional[str] = None
     id_number: Optional[str] = None
+    since_date: Optional[str] = None
 
 
 class LookupResponse(BaseModel):
