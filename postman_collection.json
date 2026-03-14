@@ -1,0 +1,250 @@
+{
+  "info": {
+    "name": "Merchant Precheck Public Database Lookup",
+    "description": "Consulta bases de datos publicas oficiales de empresas por identificador tributario (NIT para Colombia).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "test",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/healthz",
+          "host": ["{{base_url}}"],
+          "path": ["healthz"]
+        },
+        "description": "Liveness / readiness probe. No requiere autenticacion."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Body has status ok', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.status).to.eql('ok');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookup — Colombia (NIT valido)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tax_id\": \"900123456-1\",\n  \"country\": \"CO\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/lookup",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "lookup"]
+        },
+        "description": "Consulta RUES por NIT colombiano. Reemplaza tax_id con un NIT real para probar."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response has required fields', () => {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body).to.have.property('tax_id_input');",
+              "  pm.expect(body).to.have.property('country', 'CO');",
+              "  pm.expect(body).to.have.property('found');",
+              "  pm.expect(body).to.have.property('source');",
+              "  pm.expect(body).to.have.property('errors');",
+              "  pm.expect(body.errors).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookup — NIT invalido (formato malo)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tax_id\": \"123\",\n  \"country\": \"CO\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/lookup",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "lookup"]
+        },
+        "description": "Envio de NIT con formato invalido. Debe retornar 422."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 422 — NIT invalido', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookup — Sin autenticacion",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tax_id\": \"900123456-1\",\n  \"country\": \"CO\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/lookup",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "lookup"]
+        },
+        "description": "Request sin Bearer token. Debe retornar 403."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 403 — no auth', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookup — API key incorrecta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer wrong-key"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tax_id\": \"900123456-1\",\n  \"country\": \"CO\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/lookup",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "lookup"]
+        },
+        "description": "Request con API key incorrecta. Debe retornar 401."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401 — invalid key', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lookup — Pais no soportado",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tax_id\": \"20123456789\",\n  \"country\": \"PE\"\n}",
+          "options": {"raw": {"language": "json"}}
+        },
+        "url": {
+          "raw": "{{base_url}}/v1/lookup",
+          "host": ["{{base_url}}"],
+          "path": ["v1", "lookup"]
+        },
+        "description": "Request con pais no soportado (PE). Debe retornar 422."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 422 — pais no soportado', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
