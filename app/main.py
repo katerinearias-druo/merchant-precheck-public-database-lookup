@@ -79,8 +79,11 @@ def _rate_limit_exceeded_handler(
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     logger.info("Starting up: initializing Playwright browser...")
-    await get_browser()
-    logger.info("Browser ready.")
+    try:
+        await get_browser()
+        logger.info("Browser ready.")
+    except Exception:
+        logger.exception("Failed to initialize browser at startup — will retry on first request")
     yield
     logger.info("Shutting down: closing browser...")
     await shutdown_browser()

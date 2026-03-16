@@ -15,7 +15,10 @@ RUN playwright install --with-deps chromium
 COPY . .
 
 # Create non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+# Grant read access to Playwright browser binaries
+RUN useradd -m -u 1000 appuser \
+    && chown -R appuser:appuser /app \
+    && chmod -R o+rx /ms-playwright
 
 USER appuser
 
@@ -24,4 +27,4 @@ ENV PORT=8000
 
 EXPOSE ${PORT}
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["python", "-m", "app.main"]
